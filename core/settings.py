@@ -23,18 +23,7 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "0.0.0.0",
-    "respectaso.private",
-]
-
-# Support extra hosts via env var (comma-separated)
-# Example: EXTRA_ALLOWED_HOSTS=*.trycloudflare.com,myhost.local
-_extra_hosts = os.environ.get("EXTRA_ALLOWED_HOSTS", "")
-if _extra_hosts:
-    ALLOWED_HOSTS.extend(h.strip() for h in _extra_hosts.split(",") if h.strip())
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -51,7 +40,8 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # CSRF disabled — this is a local-only tool with no auth/accounts
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -95,19 +85,3 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# CSRF trusted origins for local Docker access
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost",
-    "http://127.0.0.1",
-    "http://respectaso.private",
-    "http://localhost:9090",
-    "http://127.0.0.1:9090",
-    "http://respectaso.private:9090",
-]
-
-# Support extra CSRF origins via env var (comma-separated)
-# Example: EXTRA_CSRF_ORIGINS=https://*.trycloudflare.com
-_extra_csrf = os.environ.get("EXTRA_CSRF_ORIGINS", "")
-if _extra_csrf:
-    CSRF_TRUSTED_ORIGINS.extend(o.strip() for o in _extra_csrf.split(",") if o.strip())
