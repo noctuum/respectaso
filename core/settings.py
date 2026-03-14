@@ -30,6 +30,12 @@ ALLOWED_HOSTS = [
     "respectaso.private",
 ]
 
+# Support extra hosts via env var (comma-separated)
+# Example: EXTRA_ALLOWED_HOSTS=*.trycloudflare.com,myhost.local
+_extra_hosts = os.environ.get("EXTRA_ALLOWED_HOSTS", "")
+if _extra_hosts:
+    ALLOWED_HOSTS.extend(h.strip() for h in _extra_hosts.split(",") if h.strip())
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -99,3 +105,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:9090",
     "http://respectaso.private:9090",
 ]
+
+# Support extra CSRF origins via env var (comma-separated)
+# Example: EXTRA_CSRF_ORIGINS=https://*.trycloudflare.com
+_extra_csrf = os.environ.get("EXTRA_CSRF_ORIGINS", "")
+if _extra_csrf:
+    CSRF_TRUSTED_ORIGINS.extend(o.strip() for o in _extra_csrf.split(",") if o.strip())
