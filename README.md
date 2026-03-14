@@ -1,8 +1,53 @@
-# RespectASO
+# RespectASO (Auto-Build Fork)
+
+> **This is a fork of [respectlytics/respectaso](https://github.com/respectlytics/respectaso).**
+>
+> **Why this fork exists:** The upstream repo doesn't publish pre-built Docker images. This fork adds CI/CD that auto-builds and pushes images to GHCR so you can `docker pull` instead of building locally. It syncs with upstream daily — no code changes, just infrastructure.
+>
+> **Want this upstream?** Consider opening a PR to the original repo.
+
+## Quick Start (this fork)
+
+No cloning, no local builds:
+
+```bash
+docker pull ghcr.io/noctuum/respectaso:latest
+docker run -d -p 80:8080 -v aso_data:/app/data --restart unless-stopped ghcr.io/noctuum/respectaso:latest
+```
+
+Or with docker-compose:
+
+```yaml
+services:
+  web:
+    image: ghcr.io/noctuum/respectaso:latest
+    ports:
+      - "80:8080"
+    volumes:
+      - aso_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  aso_data:
+```
+
+```bash
+docker compose up -d
+```
+
+Open **http://localhost** — done.
+
+**Update to latest:** `docker compose pull && docker compose up -d`
+
+---
+
+*Everything below is from the original README.*
+
+---
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
-[![Version](https://img.shields.io/github/v/release/respectlytics/respectaso?color=purple&label=version)](https://github.com/respectlytics/respectaso/releases/latest)
+[![GHCR](https://img.shields.io/badge/GHCR-ghcr.io%2Fnoctuum%2Frespectaso-blue?logo=github)](https://github.com/noctuum/respectaso/pkgs/container/respectaso)
 
 **Free, open-source ASO keyword research tool — self-hosted via Docker. No API keys. No accounts. No data leaves your machine.**
 
@@ -96,7 +141,7 @@ A 7-factor weighted system that estimates how hard it is to rank:
 | App count | 10% | Total number of relevant results |
 | Content relevance | 10% | How well competitors match the keyword |
 
-**Interpretation:** Very Easy (&lt;16) · Easy (16–35) · Moderate (36–55) · Hard (56–75) · Very Hard (76–90) · Extreme (91+)
+**Interpretation:** Very Easy (<16) · Easy (16–35) · Moderate (36–55) · Hard (56–75) · Very Hard (76–90) · Extreme (91+)
 
 ### Download Estimates
 
@@ -150,15 +195,11 @@ docker cp respectaso-web-1:/app/data ./backup
 
 ### Updating to a New Version
 
+With this fork, just:
 ```bash
-cd respectaso
-git pull
-docker compose down
-docker compose build --no-cache
+docker compose pull
 docker compose up -d
 ```
-
-Your data is preserved — only the application code is updated.
 
 ### Automatic Startup
 
@@ -184,8 +225,6 @@ RespectASO is designed with privacy as a core principle:
 - **No third-party services** — all API calls go directly from your machine to Apple's public API
 - **Your data stays yours** — keyword research, competitor analysis, and search history never leave your network
 
-We built RespectASO because we believe developers should be able to research keywords without handing their competitive intelligence to a third party.
-
 ## License
 
 [AGPL-3.0](LICENSE) — free to use, modify, and distribute. If you modify and deploy RespectASO as a service, you must share your changes under the same license.
@@ -198,10 +237,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
 
-## Contact
-
-[respectlytics@loheden.com](mailto:respectlytics@loheden.com)
-
 ---
 
-**Built by [Respectlytics](https://respectlytics.com/?utm_source=respectaso&utm_medium=readme&utm_campaign=oss)** — Privacy-focused mobile analytics for iOS & Android. We help developers avoid collecting personal data in the first place.
+**Original project by [Respectlytics](https://github.com/respectlytics/respectaso).**
