@@ -12,12 +12,12 @@ Schedule:
   - Cleans up results older than 90 days after each refresh cycle.
 """
 
-import json
 import logging
 import threading
 import time
-from datetime import date, timedelta
+from datetime import timedelta
 
+from django.db import models
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -56,22 +56,13 @@ def _needs_refresh_today():
     from .models import SearchResult
 
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    # Get all distinct keyword+country pairs that have ever been searched
-    pairs = (
+    return (
         SearchResult.objects
         .values("keyword_id", "country")
-        .distinct()
+        .annotate(latest=models.Max("searched_at"))
+        .filter(latest__lt=today_start)
+        .exists()
     )
-    for pair in pairs:
-        latest = (
-            SearchResult.objects
-            .filter(keyword_id=pair["keyword_id"], country=pair["country"])
-            .order_by("-searched_at")
-            .first()
-        )
-        if latest and latest.searched_at < today_start:
-            return True
-    return False
 
 
 def _get_pairs_to_refresh():
@@ -79,22 +70,13 @@ def _get_pairs_to_refresh():
     from .models import SearchResult
 
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    pairs = (
+    stale = (
         SearchResult.objects
         .values("keyword_id", "country")
-        .distinct()
+        .annotate(latest=models.Max("searched_at"))
+        .filter(latest__lt=today_start)
     )
-    to_refresh = []
-    for pair in pairs:
-        latest = (
-            SearchResult.objects
-            .filter(keyword_id=pair["keyword_id"], country=pair["country"])
-            .order_by("-searched_at")
-            .first()
-        )
-        if latest and latest.searched_at < today_start:
-            to_refresh.append((pair["keyword_id"], pair["country"]))
-    return to_refresh
+    return [(row["keyword_id"], row["country"]) for row in stale]
 
 
 def _refresh_pair(keyword_obj, country):
@@ -127,7 +109,7 @@ def _refresh_pair(keyword_obj, country):
 
     popularity = popularity_est.estimate(competitors, keyword_obj.keyword)
 
-    download_estimates = download_est.estimate(popularity or 0, len(competitors))
+    download_estimates = download_est.estimate(popularity or 0, country=country)
     breakdown["download_estimates"] = download_estimates
 
     return SearchResult.upsert_today(
